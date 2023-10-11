@@ -1,0 +1,32 @@
+params:
+  - name: id
+    type: string
+    required: true
+    description: The ID of the search component.
+  - name: name
+    type: string
+    required: false
+    description: The name of the search component, which is submitted with the form data.
+  - name: label
+    type: object
+    required: false
+    description: Options for the label component. Defaults to a heading with the text "Search for a person on probation"
+    isComponent: true
+  - name: hint
+    type: object
+    required: false
+    description: Options for the hint component. Defaults to the text "Search using identifiers, names, aliases, date of birth..."
+    isComponent: true
+  - name: attributes
+    type: string
+    required: false
+    description: HTML attributes (for example data attributes) to add to the input.
+  - name: autocomplete
+    type: string
+    required: false
+    description: Attribute to identify input purpose, for instance “postal-code” or “username”. See https://html.spec.whatwg.org/multipage/form-control-infrastructure.html#autofill for full list of attributes that can be used.
+  - name: results
+    type: object
+    required: true
+    description: Data passed back by the search router.
+    isComponent: true

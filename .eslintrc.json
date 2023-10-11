@@ -88,6 +88,8 @@
       { "devDependencies": ["**/*.test.js", "**/*.test.ts", "**/testutils/**", "cypress.config.ts"] }
     ],
     "no-only-tests/no-only-tests": "error",
+    "no-empty-function": "off",
+    "@typescript-eslint/no-empty-function": "error",
     "prettier/prettier": [
       "error",
       {
@@ -96,7 +98,6 @@
         "printWidth": 120,
         "semi": false
       }
-    ],
-    "no-empty-function": ["error", { "allow": ["constructors", "arrowFunctions"] }]
+    ]
   }
 }
