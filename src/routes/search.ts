@@ -44,7 +44,7 @@ export function redirectToResults(
   templateFields: (req: Request, res: Response) => object,
 ) {
   return (req: Request, res: Response) => {
-    if (!allowEmptyQuery && !('probation-search-input' in req.body)) {
+    if (!allowEmptyQuery && !req.body['probation-search-input']) {
       const probationSearchResults: ResultTemplateParams = {
         errorMessage: { text: 'Please enter a search term' },
         ...securityParams(res),
@@ -69,7 +69,7 @@ export function renderResults(
 ) {
   return wrapAsync(async (req: Request, res: Response) => {
     const query = req.query.q as string
-    if (query == null || query === '') {
+    if (!query) {
       if (SearchParameters.inSession(req)) {
         // No query in the url, but we have one stored in the session, redirect using session values
         res.redirect(SearchParameters.loadFromSession(req))
