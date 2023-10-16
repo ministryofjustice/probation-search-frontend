@@ -5,8 +5,9 @@ interface PageLink {
 }
 
 export interface Pagination {
-  from: number
-  to: number
+  from: string
+  to: string
+  total: string
   next?: string
   prev?: string
   items: (PageLink | { ellipsis: boolean })[]
@@ -23,8 +24,9 @@ export default function getPaginationLinks(
   const firstPage = firstPageToShow(currentPage, maxPagesToShow)
   const lastPage = lastPageToShow(currentPage, maxPagesToShow, totalPages)
   return {
-    from: (currentPage - 1) * pageSize + 1,
-    to: Math.min(currentPage * pageSize, totalResults),
+    from: ((currentPage - 1) * pageSize + 1).toLocaleString('en-GB'),
+    to: Math.min(currentPage * pageSize, totalResults).toLocaleString('en-GB'),
+    total: totalResults.toLocaleString('en-GB'),
     next: currentPage < totalPages ? pathFn(currentPage + 1) : undefined,
     prev: currentPage > 1 ? pathFn(currentPage - 1) : undefined,
     items: getPageLinks(firstPage, lastPage, currentPage, totalPages, pathFn),

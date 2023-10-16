@@ -17,9 +17,10 @@ describe('pagination', () => {
 
 describe('pagination from/to', () => {
   it.each([
-    { currentPage: 1, totalResults: 1, pageSize: 10, expected: { from: 1, to: 1 } },
-    { currentPage: 3, totalResults: 100, pageSize: 6, expected: { from: 13, to: 18 } },
-    { currentPage: 10, totalResults: 95, pageSize: 10, expected: { from: 91, to: 95 } },
+    { currentPage: 1, totalResults: 1, pageSize: 10, expected: { from: '1', to: '1' } },
+    { currentPage: 3, totalResults: 100, pageSize: 6, expected: { from: '13', to: '18' } },
+    { currentPage: 10, totalResults: 95, pageSize: 10, expected: { from: '91', to: '95' } },
+    { currentPage: 10, totalResults: 10000, pageSize: 1000, expected: { from: '9,001', to: '10,000' } },
   ])('should return correct from and to for page %s', ({ currentPage, totalResults, pageSize, expected }) => {
     const pagination = getPaginationLinks(currentPage, 100, totalResults, () => '', pageSize, 10)
     expect(pagination.from).toEqual(expected.from)
