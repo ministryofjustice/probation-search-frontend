@@ -19,7 +19,18 @@ describe('redirectToResults', () => {
     } as unknown as Response
   })
 
-  test('should render error message when query is empty', () => {
+  test('should render error message when query is null', () => {
+    redirectToResults(false, template, templateFields)(req, res)
+
+    expect(res.redirect).not.toHaveBeenCalled()
+    expect(res.render).toHaveBeenCalledWith(template, {
+      probationSearchResults: { errorMessage: { text: 'Please enter a search term' } },
+    })
+  })
+
+  test('should render error message when query is empty string', () => {
+    req = request({ 'probation-search-input': '' })
+
     redirectToResults(false, template, templateFields)(req, res)
 
     expect(res.redirect).not.toHaveBeenCalled()
