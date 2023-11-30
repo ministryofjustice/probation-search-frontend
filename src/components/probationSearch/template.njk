@@ -54,6 +54,7 @@
                   timeoutId = setTimeout(() => fetch(url).then(async response => {
                     if (response.status === 200) {
                       const doc = new DOMParser().parseFromString(await response.text(), "text/html");
+                      if (document.getElementById("{{ params.id }}-error") || doc.getElementById("{{ params.id }}-error")) location.href = url.toString();
                       document.getElementById("{{ params.id }}-results-container").innerHTML = doc.getElementById("{{ params.id }}-results-container").innerHTML;
                       document.getElementById("{{ params.id }}-results-container").classList = doc.getElementById("{{ params.id }}-results-container").classList;
                       document.getElementById("{{ params.id }}-suggestions").innerHTML = doc.getElementById("{{ params.id }}-suggestions").innerHTML;
