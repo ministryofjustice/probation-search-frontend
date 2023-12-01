@@ -9,7 +9,7 @@
     {{ params.results.results | safe }}
 {% elif params.results.response.totalElements > 0 %}
     {{ govukTable({ firstCellIsHeader: true, head: params.results.results.head, rows: params.results.results.rows }) }}
-{% elif params.results.query != null %}
+{% elif params.results.query != null and params.results.errorMessage == null %}
     <p>There are no results for your search. Try refining your query above.</p>
 {% endif %}
 
