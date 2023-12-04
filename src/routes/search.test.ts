@@ -1,18 +1,28 @@
-import { redirectToResults, renderResults } from './search'
-import { Request, Response } from 'express'
-import ProbationSearchClient from '../data/probationSearchClient'
+import probationSearchRoutes from './search'
+import { Request, Response, Router } from 'express'
 
-const request = (body: any, query: { [key: string]: string } = {}) =>
-  ({ body, protocol: 'http', get: () => 'localhost', originalUrl: '/search', query }) as unknown as Request
-const template = 'search'
-const templateFields = () => ({})
-
-const client = {
-  search: jest.fn(),
-} as any as ProbationSearchClient
+const request = (body: any, query: { [key: string]: string } = {}, session: any = {}) =>
+  ({
+    body,
+    query,
+    session,
+    protocol: 'http',
+    get: () => 'localhost',
+    originalUrl: '/search',
+    url: '/search',
+  }) as unknown as Request
 
 let req: Request
 let res: Response
+let handleGet: (req: Request, res: Response) => any
+let handlePost: (req: Request, res: Response) => any
+
+const environment = 'local'
+const oauthClient = { getSystemClientToken: jest.fn() }
+const router = {
+  get: (path: string, handler: (req: Request, res: Response) => any) => (handleGet = handler),
+  post: (path: string, handler: (req: Request, res: Response) => any) => (handlePost = handler),
+} as any as Router
 
 beforeEach(() => {
   req = request({})
@@ -21,77 +31,77 @@ beforeEach(() => {
     redirect: jest.fn(),
     locals: {},
   } as unknown as Response
+
+  probationSearchRoutes({ environment, oauthClient, router })
 })
 
-describe('redirectToResults', () => {
-  test('should render error message when query is null', () => {
-    redirectToResults(false, template, templateFields)(req, res)
+describe('POST /search', () => {
+  test('stores the query and reloads the page', () => {
+    req = request({ 'probation-search-input': 'test' })
 
-    expect(res.redirect).not.toHaveBeenCalled()
-    expect(res.render).toHaveBeenCalledWith(template, {
+    handlePost(req, res)
+
+    expect(req.session.probationSearch?.query).toEqual('test')
+    expect(res.redirect).toHaveBeenCalledWith('http://localhost/search')
+  })
+})
+
+describe('GET /search', () => {
+  test('renders an empty screen when no session', () => {
+    handleGet(req, res)
+
+    expect(res.render).toHaveBeenCalledWith('pages/search', { probationSearchResults: {} })
+  })
+
+  test('renders an error message if query is undefined', () => {
+    req.session.probationSearch = {}
+
+    handleGet(req, res)
+
+    expect(res.render).toHaveBeenCalledWith('pages/search', {
       probationSearchResults: { errorMessage: { text: 'Please enter a search term' }, query: '' },
     })
   })
 
-  test('should render error message when query is empty string', () => {
-    req = request({ 'probation-search-input': '' })
+  test('renders an error message if query is empty string', () => {
+    req.session.probationSearch = { query: '' }
 
-    redirectToResults(false, template, templateFields)(req, res)
+    handleGet(req, res)
 
-    expect(res.redirect).not.toHaveBeenCalled()
-    expect(res.render).toHaveBeenCalledWith(template, {
+    expect(res.render).toHaveBeenCalledWith('pages/search', {
       probationSearchResults: { errorMessage: { text: 'Please enter a search term' }, query: '' },
     })
   })
 
-  test('should redirect when query is not empty', () => {
-    req = request({ 'probation-search-input': 'test' })
+  it('renders an error message when query is too long', () => {
+    req.session.probationSearch = { query: '12345' }
+    probationSearchRoutes({ environment, oauthClient, router, maxQueryLength: 4 })
 
-    redirectToResults(false, template, templateFields)(req, res)
-    expect(res.render).not.toHaveBeenCalled()
-    expect(res.redirect).toHaveBeenCalledWith('http://localhost/search?q=test&page=1')
+    handleGet(req, res)
+
+    expect(res.render).toHaveBeenCalledWith('pages/search', {
+      probationSearchResults: { errorMessage: { text: 'Query must be 4 characters or less.' }, query: '12345' },
+    })
   })
 
-  test('should handle empty query when allowEmptyQuery is true', () => {
-    redirectToResults(true, template, templateFields)(req, res)
+  test('renders empty search screen for empty query when allowEmptyQuery is true', () => {
+    probationSearchRoutes({ environment, oauthClient, router, allowEmptyQuery: true })
 
-    expect(res.render).not.toHaveBeenCalled()
-    expect(res.redirect).toHaveBeenCalledWith('http://localhost/search?q=&page=1')
+    handleGet(req, res)
+
+    expect(res.render).toHaveBeenCalledWith('pages/search', { probationSearchResults: {} })
   })
 
-  test('should redirect with query parameter when allowEmptyQuery is true and query is not empty', () => {
-    req = request({ 'probation-search-input': 'test' })
-
-    redirectToResults(true, template, templateFields)(req, res)
-
-    expect(res.render).not.toHaveBeenCalled()
-    expect(res.redirect).toHaveBeenCalledWith('http://localhost/search?q=test&page=1')
-  })
-
-  test('should pass through custom template fields', () => {
+  test('passes through extra template fields', () => {
     const templateFields = () => ({ field1: 'value1', field2: 'value2' })
+    probationSearchRoutes({ environment, oauthClient, router, templateFields })
 
-    redirectToResults(false, template, templateFields)(req, res)
+    handleGet(req, res)
 
-    expect(res.render).toHaveBeenCalledWith(template, {
-      probationSearchResults: { errorMessage: { text: 'Please enter a search term' }, query: '' },
+    expect(res.render).toHaveBeenCalledWith('pages/search', {
+      probationSearchResults: {},
       field1: 'value1',
       field2: 'value2',
-    })
-    expect(res.redirect).not.toHaveBeenCalled()
-  })
-})
-
-describe('renderResults', () => {
-  it('should render an error message when query is too long', () => {
-    req.query.q = '12345'
-    const maxQueryLength = 4
-
-    renderResults(client, 10, 7, maxQueryLength, jest.fn(), template, templateFields)(req, res, jest.fn())
-
-    expect(client.search).not.toHaveBeenCalled()
-    expect(res.render).toHaveBeenCalledWith(template, {
-      probationSearchResults: { errorMessage: { text: 'Query must be 4 characters or less.' }, query: '12345' },
     })
   })
 })

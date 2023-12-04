@@ -10,8 +10,7 @@ import data from '../data/localData'
 import getPaginationLinks, { Pagination } from '../utils/pagination'
 import getSuggestionLinks, { SuggestionLink } from '../utils/suggestions'
 import wrapAsync from '../utils/middleware'
-import { addParameters } from '../utils/url'
-import SearchParameters from '../data/searchParameters'
+import { addParameters, getAbsoluteUrl } from '../utils/url'
 import { Environment, EnvironmentConfig } from '../environments'
 
 export default function probationSearchRoutes({
@@ -33,102 +32,69 @@ export default function probationSearchRoutes({
 }: ProbationSearchRouteOptions): Router {
   const client = new ProbationSearchClient(oauthClient, environment === 'local' ? localData : environment)
 
-  router.post(path, redirectToResults(allowEmptyQuery, template, templateFields))
-  router.get(
-    path,
-    renderResults(client, pageSize, maxPagesToShow, maxQueryLength, resultsFormatter, template, templateFields),
-  )
+  router.post(path, saveQueryToSession)
+  router.get(path, wrapAsync(renderResults))
+
+  function saveQueryToSession(req: Request, res: Response) {
+    req.session.probationSearch = { query: req.body['probation-search-input'] as string }
+    res.redirect(getAbsoluteUrl(req))
+  }
+
+  async function renderResults(req: Request, res: Response) {
+    const extraFields = templateFields(req, res)
+
+    // Util functions
+    const noSearch = () => res.render(template, { probationSearchResults: securityParams(res), ...extraFields })
+    const errorMessage = (text: string, query: string = '', errorMessage = { text }) => {
+      delete req.session.probationSearch
+      res.render(template, { probationSearchResults: { errorMessage, query, ...securityParams(res) }, ...extraFields })
+    }
+
+    // Render an empty search screen if no session
+    if (!('probationSearch' in req.session) || !req.session.probationSearch) {
+      return noSearch()
+    }
+
+    // Validate query string from session
+    const { query } = req.session.probationSearch
+    if (!query) {
+      return allowEmptyQuery ? noSearch() : errorMessage('Please enter a search term')
+    }
+    if (maxQueryLength && query.length > maxQueryLength) {
+      return errorMessage(`Query must be ${maxQueryLength} characters or less.`, query)
+    }
+
+    // Load search results
+    const request = {
+      query,
+      matchAllTerms: (req.query.matchAllTerms ?? 'true') === 'true',
+      providersFilter: (req.query.providers as string[]) ?? [],
+      asUsername: res.locals.user.username,
+      pageNumber: req.query.page ? Number.parseInt(req.query.page as string, 10) : 1,
+      pageSize,
+    }
+    const response = await client.search(request)
+
+    // Parse and render results
+    const probationSearchResults: ResultTemplateParams = {
+      query,
+      response,
+      results: await resultsFormatter(response, request),
+      suggestions: getSuggestionLinks(response, req),
+      pagination: getPaginationLinks(
+        request.pageNumber,
+        response.totalPages,
+        response.totalElements,
+        page => addParameters(req, { page: page.toString() }),
+        pageSize,
+        maxPagesToShow,
+      ),
+      ...securityParams(res),
+    }
+    res.render(template, { probationSearchResults, ...extraFields })
+  }
 
   return router
-}
-
-export function redirectToResults(
-  allowEmptyQuery: boolean,
-  template: string,
-  templateFields: (req: Request, res: Response) => object,
-) {
-  return (req: Request, res: Response) => {
-    function errorMessage(text: string) {
-      renderError(text, '', res, template, templateFields(req, res))
-    }
-
-    const query = req.body['probation-search-input']
-    if (!allowEmptyQuery && !query) {
-      return errorMessage('Please enter a search term')
-    } else {
-      res.redirect(addParameters(req, { q: query ?? '', page: '1' }))
-    }
-  }
-}
-
-export function renderResults(
-  client: ProbationSearchClient,
-  pageSize: number,
-  maxPagesToShow: number,
-  maxQueryLength: number,
-  resultsFormatter: (
-    apiResponse: ProbationSearchResponse,
-    apiRequest: ProbationSearchRequest,
-  ) => Promise<string | Table>,
-  template: string,
-  templateFields: (req: Request, res: Response) => object,
-) {
-  return wrapAsync(async (req: Request, res: Response) => {
-    function errorMessage(text: string) {
-      renderError(text, req.query.q as string, res, template, templateFields(req, res))
-    }
-
-    const query = req.query.q as string
-    if (!query) {
-      if (SearchParameters.inSession(req)) {
-        // No query in the url, but we have one stored in the session, redirect using session values
-        res.redirect(SearchParameters.loadFromSession(req))
-      } else {
-        // No query in the url or session, render empty search screen
-        res.render(template, { probationSearchResults: securityParams(res), ...templateFields(req, res) })
-      }
-    } else {
-      // Validate query length
-      if (maxQueryLength && query.length > maxQueryLength) {
-        return errorMessage(`Query must be ${maxQueryLength} characters or less.`)
-      }
-
-      // Load search results
-      const request = {
-        query,
-        matchAllTerms: (req.query.matchAllTerms ?? 'true') === 'true',
-        providersFilter: (req.query.providers as string[]) ?? [],
-        asUsername: res.locals.user.username,
-        pageNumber: req.query.page ? Number.parseInt(req.query.page as string, 10) : 1,
-        pageSize,
-      }
-
-      const response = await client.search(request)
-
-      const probationSearchResults: ResultTemplateParams = {
-        query,
-        response,
-        results: await resultsFormatter(response, request),
-        suggestions: getSuggestionLinks(response, req),
-        pagination: getPaginationLinks(
-          request.pageNumber,
-          response.totalPages,
-          response.totalElements,
-          page => addParameters(req, { page: page.toString() }),
-          pageSize,
-          maxPagesToShow,
-        ),
-        ...securityParams(res),
-      }
-      res.render(template, { probationSearchResults, ...templateFields(req, res) })
-      SearchParameters.saveToSession(req)
-    }
-  })
-}
-
-function renderError(text: string, query: string, res: Response, template: string, templateFields: object): void {
-  const probationSearchResults: ResultTemplateParams = { errorMessage: { text }, query, ...securityParams(res) }
-  res.render(template, { probationSearchResults, ...templateFields })
 }
 
 function defaultResultFormatter(

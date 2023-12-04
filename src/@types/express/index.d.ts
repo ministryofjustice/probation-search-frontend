@@ -10,10 +10,7 @@ declare module 'express-session' {
 export declare global {
   namespace ProbationSearch {
     interface SearchParameters extends Record<string, string | string[]> {
-      q?: string
-      page?: string
-      matchAllTerms?: string
-      providers?: string[]
+      query?: string
     }
   }
 }
