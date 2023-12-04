@@ -45,9 +45,11 @@
               (() => {
                 let timeoutId = null;
 
-                function doSearch() {
+                function doSearch(updateHistory = true) {
                   clearTimeout(timeoutId);
-                  timeoutId = setTimeout(() => fetch(location.href, {
+                  const url = new URL(location.href);
+                  url.search = "";
+                  timeoutId = setTimeout(() => fetch(url, {
                     method: "POST",
                     body: new URLSearchParams(new FormData(document.getElementById("{{ params.id }}-form")))
                   }).then(async response => {
@@ -58,6 +60,7 @@
                       document.getElementById("{{ params.id }}-results-container").classList = doc.getElementById("{{ params.id }}-results-container").classList;
                       document.getElementById("{{ params.id }}-suggestions").innerHTML = doc.getElementById("{{ params.id }}-suggestions").innerHTML;
                       document.getElementsByName("_csrf")[0].value = doc.getElementsByName("_csrf")[0].value;
+                      if (updateHistory) history.pushState({ query: document.getElementById("{{ params.id }}").value }, "", url);
                     } else {
                       document.getElementById("{{ params.id }}-results-container").innerHTML = "<div class=\"govuk-error-summary\"><h2 class=\"govuk-error-summary__title\">Something went wrong</h2><div class=\"govuk-error-summary__body\">The error has been logged. Please try again.</div></div>";
                       document.getElementById("{{ params.id }}-suggestions").innerHTML = "";
@@ -69,6 +72,12 @@
                 document.getElementById("{{ params.id }}-form").addEventListener("submit", e => {
                   doSearch();
                   e.preventDefault();
+                });
+                addEventListener("popstate", e => {
+                  if (e.state && e.state.query) {
+                    document.getElementById("{{ params.id }}").value = e.state.query;
+                    doSearch(false);
+                  }
                 });
               })();
             </script>
