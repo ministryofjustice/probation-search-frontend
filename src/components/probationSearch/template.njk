@@ -29,17 +29,19 @@
                 Did you mean
                 {%- set comma = joiner() %}
                 {%- for suggestion in params.results.suggestions %}{{ comma() }}
-                    <a href="#" data-new-query="{{ suggestion.newQuery }}"
+                    <a href="#" data-suggested-query="{{ suggestion.newQuery }}"
                        class="govuk-link govuk-link--no-visited-state"
                        title="Search again using {{ suggestion.text }}">{{ suggestion.text }}</a>
                 {%- endfor %}?
-                <script nonce="{{ params.results.cspNonce }}">
-                  document.querySelectorAll("[data-new-query]").forEach(el => el.addEventListener("click", e => {
-                    document.getElementById("{{ params.id }}").value = e.target.dataset.newQuery;
-                    document.getElementById("{{ params.id }}-form").submit();
-                  }));
-                </script>
             {% endif %}
+            <script nonce="{{ params.results.cspNonce }}">
+              document.getElementById("{{ params.id }}-suggestions").addEventListener("click", e => {
+                if (e.target.dataset.suggestedQuery) {
+                  document.getElementById("{{ params.id }}").value = e.target.dataset.suggestedQuery;
+                  document.getElementById("{{ params.id }}-form").submit();
+                }
+              });
+            </script>
         </p>
 
         {% if params.postHint %}
