@@ -52,30 +52,22 @@
             <label for="{{ params.id }}" class="govuk-visually-hidden">Results will be updated as you type</label>
             <script nonce="{{ params.results.cspNonce }}">
               (() => {
-                let timeoutId = null;
-
-                function doSearch(updateHistory = true) {
-                  clearTimeout(timeoutId);
-                  const url = new URL(location.href);
-                  url.search = "";
-                  timeoutId = setTimeout(() => {
-                    retry(() => fetch(url, {
-                      method: "POST",
-                      body: new URLSearchParams(new FormData(document.getElementById("{{ params.id }}-form")))
-                    })).then(async response => {
-                      if (response.status === 200) {
-                        const doc = new DOMParser().parseFromString(await response.text(), "text/html");
-                        if (document.getElementById("{{ params.id }}-error") || doc.getElementById("{{ params.id }}-error")) document.getElementById("{{ params.id }}-form").submit();
-                        document.getElementById("{{ params.id }}-results-container").innerHTML = doc.getElementById("{{ params.id }}-results-container").innerHTML;
-                        document.getElementById("{{ params.id }}-results-container").classList = doc.getElementById("{{ params.id }}-results-container").classList;
-                        document.getElementById("{{ params.id }}-suggestions").innerHTML = doc.getElementById("{{ params.id }}-suggestions").innerHTML;
-                        document.getElementsByName("_csrf")[0].value = doc.getElementsByName("_csrf")[0].value;
-                        if (updateHistory) history.pushState({ query: document.getElementById("{{ params.id }}").value }, "", url);
-                      } else {
-                        handleError(new Error("Search request failed with status " + response.status));
-                      }
-                    }).catch(reason => handleError(new Error(reason)));
-                  }, 250);
+                function doSearch() {
+                  retry(() => fetch(location.href, {
+                    method: "POST",
+                    body: new URLSearchParams(new FormData(document.getElementById("{{ params.id }}-form")))
+                  }), 3, 100).then(async response => {
+                    if (response.ok) {
+                      const doc = new DOMParser().parseFromString(await response.text(), "text/html");
+                      if (document.getElementById("{{ params.id }}-error") || doc.getElementById("{{ params.id }}-error")) document.getElementById("{{ params.id }}-form").submit();
+                      document.getElementById("{{ params.id }}-results-container").innerHTML = doc.getElementById("{{ params.id }}-results-container").innerHTML;
+                      document.getElementById("{{ params.id }}-results-container").classList = doc.getElementById("{{ params.id }}-results-container").classList;
+                      document.getElementById("{{ params.id }}-suggestions").innerHTML = doc.getElementById("{{ params.id }}-suggestions").innerHTML;
+                      document.getElementsByName("_csrf")[0].value = doc.getElementsByName("_csrf")[0].value;
+                    } else {
+                      handleError(new Error("Search request failed with status " + response.status));
+                    }
+                  }).catch(reason => handleError(new Error(reason)));
                 }
 
                 function handleError(error) {
@@ -84,7 +76,7 @@
                   throw error;
                 }
 
-                function retry(promiseFn, retries = 3, delay = 100) {
+                function retry(promiseFn, retries, delay) {
                   return new Promise((resolve, reject) => {
                     promiseFn().then(resolve).catch(error => {
                       if (retries > 0) setTimeout(() => retry(promiseFn, retries - 1, delay).then(resolve).catch(reject), delay);
@@ -93,16 +85,18 @@
                   });
                 }
 
-                document.getElementById("{{ params.id }}").addEventListener("input", doSearch);
+                function debounce(fn, delay) {
+                  let timeoutId;
+                  return function(...args) {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => fn.apply(this, args), delay);
+                  };
+                }
+
+                document.getElementById("{{ params.id }}").addEventListener("input", debounce(doSearch, 250));
                 document.getElementById("{{ params.id }}-form").addEventListener("submit", e => {
                   doSearch();
                   e.preventDefault();
-                });
-                addEventListener("popstate", e => {
-                  if (e.state && e.state.query) {
-                    document.getElementById("{{ params.id }}").value = e.state.query;
-                    doSearch(false);
-                  }
                 });
               })();
             </script>
@@ -114,5 +108,5 @@
 
 <div id="{{ params.id }}-results-container"
      class="probation-search__results-container {{ 'probation-search__has-results' if params.results.results else '' }}">
-{% include "./results.njk" %}
+    {% include "./results.njk" %}
 </div>

@@ -11,6 +11,8 @@ export declare global {
   namespace ProbationSearch {
     interface SearchParameters extends Record<string, string | string[]> {
       query?: string
+      providers?: string[]
+      matchAllTerms?: string
     }
   }
 }

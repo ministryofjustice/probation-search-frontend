@@ -28,7 +28,7 @@ export default class ProbationSearchClient {
       .retry(2)
       .send({
         phrase: query,
-        probationAreasFilter: providersFilter,
+        probationAreasFilter: providersFilter.map(provider => provider.substring(0, 3)),
         matchAllTerms,
       })
     return response.body

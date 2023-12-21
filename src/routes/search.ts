@@ -10,7 +10,7 @@ import data from '../data/localData'
 import getPaginationLinks, { Pagination } from '../utils/pagination'
 import getSuggestionLinks, { SuggestionLink } from '../utils/suggestions'
 import wrapAsync from '../utils/middleware'
-import { addParameters, getAbsoluteUrl } from '../utils/url'
+import { addParameters, removeParameters } from '../utils/url'
 import { Environment, EnvironmentConfig } from '../environments'
 
 export default function probationSearchRoutes({
@@ -36,8 +36,9 @@ export default function probationSearchRoutes({
   router.get(path, wrapAsync(renderResults))
 
   function saveQueryToSession(req: Request, res: Response) {
-    req.session.probationSearch = { query: req.body['probation-search-input'] as string }
-    res.redirect(getAbsoluteUrl(req))
+    if (!req.session.probationSearch) req.session.probationSearch = {}
+    req.session.probationSearch.query = req.body['probation-search-input'] as string
+    res.redirect(removeParameters(req, 'page'))
   }
 
   async function renderResults(req: Request, res: Response) {
@@ -56,7 +57,7 @@ export default function probationSearchRoutes({
     }
 
     // Validate query string from session
-    const { query } = req.session.probationSearch
+    const { query, matchAllTerms, providers } = req.session.probationSearch
     if (!query) {
       return allowEmptyQuery ? noSearch() : errorMessage('Please enter a search term')
     }
@@ -67,8 +68,8 @@ export default function probationSearchRoutes({
     // Load search results
     const request = {
       query,
-      matchAllTerms: (req.query.matchAllTerms ?? 'true') === 'true',
-      providersFilter: (req.query.providers as string[]) ?? [],
+      matchAllTerms: (matchAllTerms ?? 'true') === 'true',
+      providersFilter: providers ?? [],
       asUsername: res.locals.user.username,
       pageNumber: req.query.page ? Number.parseInt(req.query.page as string, 10) : 1,
       pageSize,
