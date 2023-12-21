@@ -58,23 +58,39 @@
                   clearTimeout(timeoutId);
                   const url = new URL(location.href);
                   url.search = "";
-                  timeoutId = setTimeout(() => fetch(url, {
-                    method: "POST",
-                    body: new URLSearchParams(new FormData(document.getElementById("{{ params.id }}-form")))
-                  }).then(async response => {
-                    if (response.status === 200) {
-                      const doc = new DOMParser().parseFromString(await response.text(), "text/html");
-                      if (document.getElementById("{{ params.id }}-error") || doc.getElementById("{{ params.id }}-error")) document.getElementById("{{ params.id }}-form").submit();
-                      document.getElementById("{{ params.id }}-results-container").innerHTML = doc.getElementById("{{ params.id }}-results-container").innerHTML;
-                      document.getElementById("{{ params.id }}-results-container").classList = doc.getElementById("{{ params.id }}-results-container").classList;
-                      document.getElementById("{{ params.id }}-suggestions").innerHTML = doc.getElementById("{{ params.id }}-suggestions").innerHTML;
-                      document.getElementsByName("_csrf")[0].value = doc.getElementsByName("_csrf")[0].value;
-                      if (updateHistory) history.pushState({ query: document.getElementById("{{ params.id }}").value }, "", url);
-                    } else {
-                      document.getElementById("{{ params.id }}-results-container").innerHTML = "<div class=\"govuk-error-summary\"><h2 class=\"govuk-error-summary__title\">Something went wrong</h2><div class=\"govuk-error-summary__body\">The error has been logged. Please try again.</div></div>";
-                      document.getElementById("{{ params.id }}-suggestions").innerHTML = "";
-                    }
-                  }), 250);
+                  timeoutId = setTimeout(() => {
+                    retry(() => fetch(url, {
+                      method: "POST",
+                      body: new URLSearchParams(new FormData(document.getElementById("{{ params.id }}-form")))
+                    })).then(async response => {
+                      if (response.status === 200) {
+                        const doc = new DOMParser().parseFromString(await response.text(), "text/html");
+                        if (document.getElementById("{{ params.id }}-error") || doc.getElementById("{{ params.id }}-error")) document.getElementById("{{ params.id }}-form").submit();
+                        document.getElementById("{{ params.id }}-results-container").innerHTML = doc.getElementById("{{ params.id }}-results-container").innerHTML;
+                        document.getElementById("{{ params.id }}-results-container").classList = doc.getElementById("{{ params.id }}-results-container").classList;
+                        document.getElementById("{{ params.id }}-suggestions").innerHTML = doc.getElementById("{{ params.id }}-suggestions").innerHTML;
+                        document.getElementsByName("_csrf")[0].value = doc.getElementsByName("_csrf")[0].value;
+                        if (updateHistory) history.pushState({ query: document.getElementById("{{ params.id }}").value }, "", url);
+                      } else {
+                        handleError(new Error("Search request failed with status " + response.status));
+                      }
+                    }).catch(reason => handleError(new Error(reason)));
+                  }, 250);
+                }
+
+                function handleError(error) {
+                  document.getElementById("{{ params.id }}-results-container").innerHTML = "<div class=\"govuk-error-summary\"><h2 class=\"govuk-error-summary__title\">Something went wrong</h2><div class=\"govuk-error-summary__body\">The error has been logged. Please try again.</div></div>";
+                  document.getElementById("{{ params.id }}-suggestions").innerHTML = "";
+                  throw error;
+                }
+
+                function retry(promiseFn, retries = 3, delay = 100) {
+                  return new Promise((resolve, reject) => {
+                    promiseFn().then(resolve).catch(error => {
+                      if (retries > 0) setTimeout(() => retry(promiseFn, retries - 1, delay).then(resolve).catch(reject), delay);
+                      reject(error || new Error("Maximum retries exceeded"));
+                    });
+                  });
                 }
 
                 document.getElementById("{{ params.id }}").addEventListener("input", doSearch);
