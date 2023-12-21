@@ -29,17 +29,19 @@
                 Did you mean
                 {%- set comma = joiner() %}
                 {%- for suggestion in params.results.suggestions %}{{ comma() }}
-                    <a href="#" data-new-query="{{ suggestion.newQuery }}"
+                    <a href="#" data-suggested-query="{{ suggestion.newQuery }}"
                        class="govuk-link govuk-link--no-visited-state"
                        title="Search again using {{ suggestion.text }}">{{ suggestion.text }}</a>
                 {%- endfor %}?
-                <script nonce="{{ params.results.cspNonce }}">
-                  document.querySelectorAll("[data-new-query]").forEach(el => el.addEventListener("click", e => {
-                    document.getElementById("{{ params.id }}").value = e.target.dataset.newQuery;
-                    document.getElementById("{{ params.id }}-form").submit();
-                  }));
-                </script>
             {% endif %}
+            <script nonce="{{ params.results.cspNonce }}">
+              document.getElementById("{{ params.id }}-suggestions").addEventListener("click", e => {
+                if (e.target.dataset.suggestedQuery) {
+                  document.getElementById("{{ params.id }}").value = e.target.dataset.suggestedQuery;
+                  document.getElementById("{{ params.id }}-form").submit();
+                }
+              });
+            </script>
         </p>
 
         {% if params.postHint %}
@@ -50,41 +52,51 @@
             <label for="{{ params.id }}" class="govuk-visually-hidden">Results will be updated as you type</label>
             <script nonce="{{ params.results.cspNonce }}">
               (() => {
-                let timeoutId = null;
-
-                function doSearch(updateHistory = true) {
-                  clearTimeout(timeoutId);
-                  const url = new URL(location.href);
-                  url.search = "";
-                  timeoutId = setTimeout(() => fetch(url, {
+                function doSearch() {
+                  retry(() => fetch(location.href, {
                     method: "POST",
                     body: new URLSearchParams(new FormData(document.getElementById("{{ params.id }}-form")))
-                  }).then(async response => {
-                    if (response.status === 200) {
+                  }), 3, 100).then(async response => {
+                    if (response.ok) {
                       const doc = new DOMParser().parseFromString(await response.text(), "text/html");
                       if (document.getElementById("{{ params.id }}-error") || doc.getElementById("{{ params.id }}-error")) document.getElementById("{{ params.id }}-form").submit();
                       document.getElementById("{{ params.id }}-results-container").innerHTML = doc.getElementById("{{ params.id }}-results-container").innerHTML;
                       document.getElementById("{{ params.id }}-results-container").classList = doc.getElementById("{{ params.id }}-results-container").classList;
                       document.getElementById("{{ params.id }}-suggestions").innerHTML = doc.getElementById("{{ params.id }}-suggestions").innerHTML;
                       document.getElementsByName("_csrf")[0].value = doc.getElementsByName("_csrf")[0].value;
-                      if (updateHistory) history.pushState({ query: document.getElementById("{{ params.id }}").value }, "", url);
                     } else {
-                      document.getElementById("{{ params.id }}-results-container").innerHTML = "<div class=\"govuk-error-summary\"><h2 class=\"govuk-error-summary__title\">Something went wrong</h2><div class=\"govuk-error-summary__body\">The error has been logged. Please try again.</div></div>";
-                      document.getElementById("{{ params.id }}-suggestions").innerHTML = "";
+                      handleError(new Error("Search request failed with status " + response.status));
                     }
-                  }), 250);
+                  }).catch(reason => handleError(new Error(reason)));
                 }
 
-                document.getElementById("{{ params.id }}").addEventListener("input", doSearch);
+                function handleError(error) {
+                  document.getElementById("{{ params.id }}-results-container").innerHTML = "<div class=\"govuk-error-summary\"><h2 class=\"govuk-error-summary__title\">Something went wrong</h2><div class=\"govuk-error-summary__body\">The error has been logged. Please try again.</div></div>";
+                  document.getElementById("{{ params.id }}-suggestions").innerHTML = "";
+                  throw error;
+                }
+
+                function retry(promiseFn, retries, delay) {
+                  return new Promise((resolve, reject) => {
+                    promiseFn().then(resolve).catch(error => {
+                      if (retries > 0) setTimeout(() => retry(promiseFn, retries - 1, delay).then(resolve).catch(reject), delay);
+                      reject(error || new Error("Maximum retries exceeded"));
+                    });
+                  });
+                }
+
+                function debounce(fn, delay) {
+                  let timeoutId;
+                  return function(...args) {
+                    clearTimeout(timeoutId);
+                    timeoutId = setTimeout(() => fn.apply(this, args), delay);
+                  };
+                }
+
+                document.getElementById("{{ params.id }}").addEventListener("input", debounce(doSearch, 250));
                 document.getElementById("{{ params.id }}-form").addEventListener("submit", e => {
                   doSearch();
                   e.preventDefault();
-                });
-                addEventListener("popstate", e => {
-                  if (e.state && e.state.query) {
-                    document.getElementById("{{ params.id }}").value = e.state.query;
-                    doSearch(false);
-                  }
                 });
               })();
             </script>
@@ -96,5 +108,5 @@
 
 <div id="{{ params.id }}-results-container"
      class="probation-search__results-container {{ 'probation-search__has-results' if params.results.results else '' }}">
-{% include "./results.njk" %}
+    {% include "./results.njk" %}
 </div>
