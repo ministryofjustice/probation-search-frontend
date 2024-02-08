@@ -1,4 +1,6 @@
-export default [
+import { ProbationSearchResult } from './probationSearchClient'
+
+const localData: ProbationSearchResult[] = [
   {
     offenderId: 1,
     otherIds: { crn: 'A000001' },
@@ -11,7 +13,7 @@ export default [
     offenderManagers: [
       {
         active: true,
-        probationArea: { code: 'N07', description: 'London' },
+        probationArea: { probationAreaId: 2, code: 'N07', description: 'London' },
         staff: { forenames: 'Probation', surname: 'Practitioner' },
       },
     ],
@@ -29,10 +31,12 @@ export default [
     offenderManagers: [
       {
         active: true,
-        probationArea: { code: 'N07', description: 'London' },
+        probationArea: { probationAreaId: 1, code: 'N07', description: 'London' },
         staff: { forenames: 'Probation', surname: 'Practitioner' },
       },
     ],
     highlight: {},
   },
 ]
+
+export default localData

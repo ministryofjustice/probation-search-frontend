@@ -18,8 +18,8 @@ export default function getPaginationLinks(
   totalPages: number,
   totalResults: number,
   pathFn: (pageNumber: number) => string,
-  pageSize: number,
-  maxPagesToShow: number,
+  pageSize: number = 10,
+  maxPagesToShow: number = 7,
 ): Pagination {
   const firstPage = firstPageToShow(currentPage, maxPagesToShow)
   const lastPage = lastPageToShow(currentPage, maxPagesToShow, totalPages)
