@@ -36,7 +36,7 @@ export default class CaseSearchService implements SearchService {
     this.options = Object.assign(defaults, options)
     this.client = new ProbationSearchClient(
       this.options.oauthClient,
-      this.options.environment === 'local' ? this.options.localData!! : this.options.environment,
+      this.options.environment === 'local' ? this.options.localData : this.options.environment,
     )
   }
 
