@@ -1,0 +1,60 @@
+name: Integration test
+on: push
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # to checkout repo
+    steps:
+      - name: Checkout component
+        uses: actions/checkout@v4
+        with:
+          path: component
+
+      - uses: actions/setup-node@v4
+        with:
+          cache-dependency-path: component/package-lock.json
+          cache: npm
+          node-version: 20
+
+      - name: Package component
+        working-directory: component
+        run: |
+          npm clean-install
+          npm run build
+          npm pack ./dist
+
+      - name: Checkout client
+        uses: actions/checkout@v4
+        with:
+          repository: ministryofjustice/probation-search-ui
+          path: client
+
+      - uses: actions/setup-node@v4
+        with:
+          cache-dependency-path: client/package-lock.json
+          cache: npm
+          node-version: 20
+
+      - name: Install new component version
+        working-directory: client
+        run: |
+          npm clean-install
+          npm install ../component/ministryofjustice-probation-search-frontend-0.0.0.tgz --save
+
+      - name: Build
+        working-directory: client
+        run: npm run build
+
+      - name: Unit test
+        working-directory: client
+        run: npm run test
+
+      - name: Integration test
+        working-directory: client
+        run: |
+          docker-compose -f docker-compose-test.yml up -d
+          npm run start-feature & sleep 5
+          npm run int-test

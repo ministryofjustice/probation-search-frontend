@@ -13,6 +13,9 @@
                 <th scope="col" class="govuk-table__header">Name</th>
                 <th scope="col" class="govuk-table__header"><abbr title="Case Reference Number">CRN</abbr></th>
                 <th scope="col" class="govuk-table__header">Date of Birth</th>
+                {% for column in params.results.extraColumns %}
+                    <th scope="col" class="govuk-table__header">{{ column.header }}</th>
+                {% endfor %}
             </tr>
             </thead>
             <tbody class="govuk-table__body">

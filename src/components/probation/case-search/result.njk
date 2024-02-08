@@ -79,4 +79,7 @@
     <td class="govuk-table__cell">
         <span class="{{ 'govuk-tag--yellow' if 'dateOfBirth' in result.highlight else '' }}">{{ fn.formatDate(result.dateOfBirth) }}</span>
     </td>
+    {% for column in params.results.extraColumns %}
+        <td class="govuk-table__cell">{{ column.value(result) }}</td>
+    {% endfor %}
 </tr>

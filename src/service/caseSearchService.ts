@@ -15,6 +15,7 @@ export interface CaseSearchOptions {
   environment: Environment | EnvironmentConfig
   oauthClient: OAuthClient
   resultPath?: (crn: string) => string
+  extraColumns?: { header: string; value: (result: ProbationSearchResult) => string }[]
   maxQueryLength?: number
   allowEmptyQuery?: boolean
   pageSize?: number
@@ -28,6 +29,7 @@ export default class CaseSearchService implements SearchService {
   public constructor(options: CaseSearchOptions) {
     const defaults = {
       resultPath: (crn: string) => `/case/${crn}`,
+      extraColumns: [],
       allowEmptyQuery: false,
       maxQueryLength: 100,
       pageSize: 10,
@@ -48,7 +50,7 @@ export default class CaseSearchService implements SearchService {
   }
 
   get: RequestHandler = wrapAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const { resultPath, allowEmptyQuery, maxQueryLength, pageSize } = this.options
+    const { resultPath, extraColumns, allowEmptyQuery, maxQueryLength, pageSize } = this.options
 
     // Render an empty search screen if no session
     if (!('probationSearch' in req.session) || !req.session.probationSearch) {
@@ -81,6 +83,7 @@ export default class CaseSearchService implements SearchService {
     res.locals.searchResults = {
       query,
       response,
+      extraColumns,
       suggestions: getSuggestionLinks(response, req),
       pagination: getPaginationLinks(
         request.pageNumber,
