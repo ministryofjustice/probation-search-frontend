@@ -15,28 +15,28 @@
         {% if 'otherIds.pncNumberLongYear' in result.highlight or 'otherIds.pncNumberShortYear' in result.highlight %}
             <p class="govuk-!-margin-1">
                 <abbr title="Police National Computer Identifier">PNC</abbr>:
-                <span class="govuk-tag-yellow">{{ result.otherIds.pncNumber }}</span>
+                <span class="govuk-tag--yellow">{{ result.otherIds.pncNumber }}</span>
             </p>
         {% endif %}
 
         {% if 'otherIds.nomsNumber' in result.highlight %}
             <p class="govuk-!-margin-1">
                 <abbr title="Prisoner ID">NOMS</abbr>:
-                <span class="govuk-tag-yellow">{{ result.otherIds.nomsNumber }}</span>
+                <span class="govuk-tag--yellow">{{ result.otherIds.nomsNumber }}</span>
             </p>
         {% endif %}
 
         {% if 'otherIds.niNumber' in result.highlight %}
             <p class="govuk-!-margin-1">
                 <abbr title="Prisoner ID">National Insurance Number</abbr>:
-                <span class="govuk-tag-yellow">{{ result.otherIds.niNumber }}</span>
+                <span class="govuk-tag--yellow">{{ result.otherIds.niNumber }}</span>
             </p>
         {% endif %}
 
         {% if 'otherIds.croNumber' in result.highlight %}
             <p class="govuk-!-margin-1">
-                <abbr title="Criminal Records Office Number ID">CRO</abbr>:
-                <span class="govuk-tag-yellow">{{ result.otherIds.croNumber }}</span>
+                <abbr title="Criminal Records Office Number">CRO</abbr>:
+                <span class="govuk-tag--yellow">{{ result.otherIds.croNumber }}</span>
             </p>
         {% endif %}
 
