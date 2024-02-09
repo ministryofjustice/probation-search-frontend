@@ -30,7 +30,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: ministryofjustice/probation-search-ui
-          ref: PI-1852-upgrade-component
           path: client
 
       - uses: actions/setup-node@v4
