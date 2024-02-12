@@ -18,29 +18,16 @@ the [hmpps-template-typescript](https://github.com/ministryofjustice/hmpps-templ
 npm install --save @ministryofjustice/probation-search-frontend
 ```
 
-### 2. Add the Nunjucks macro
+### 2. Add the Nunjucks component
 
-Add the Nunjucks component library to your `nunjucksSetup.ts` file:
+Use the `caseSearch` component in your Nunjucks file:
 
-```typescript
-const njkEnv = nunjucks.configure([
-  ...
-    "node_modules/@ministryofjustice/probation-search-frontend/components" // <-- add this
-]);
 ```
-
-> Full example:
-> [utils/nunjucksSetup.ts](https://github.com/ministryofjustice/probation-search-ui/blob/main/server/utils/nunjucksSetup.ts)
-
-
-Then, use the `caseSearch` component in your view:
-
-```nunjucks
 {% from "probation/case-search/macro.njk" import caseSearch %}
 
 {{ caseSearch({ 
     id: "search", 
-    results: searchResults 
+    results: searchResults
 }) }}
 ```
 
