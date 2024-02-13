@@ -42,8 +42,7 @@ Create an instance of the `CaseSearchService`:
 import CaseSearchService from '@ministryofjustice/probation-search-frontend/service/caseSearchService'
 
 const searchService = new CaseSearchService({
-  environment: config.environment,      // whether you want to search cases in the dev, preprod or prod environment 
-  oauthClient: service.hmppsAuthClient, // a reference to your HMPPS Auth client
+  environment: config.environment // whether you want to search cases in the dev, preprod or prod environment 
 })
 ```
 
@@ -92,11 +91,11 @@ The `CaseSearchService` function takes the following options:
 | Option           | Description                                                                                                                                                                                   | Default                                   |
 |------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------|
 | `environment`    | Whether you want to search cases in the dev, preprod or prod environment. You can also specify `local` to use some hard-coded test data - override the test data by setting `localData`.      | (none)                                    |
-| `oauthClient`    | A function for returning a HMPPS Auth client_credentials token. This will be used to get a token for calling the Probation Search API.                                                        | (none)                                    |
 | `resultPath`     | A function used to generate a link to the case in your service, based on the case reference number (CRN).                                                                                     | (crn: string) => `/case/${crn}`           |
 | `extraColumns`   | An optional array of extra columns to display in search results, in addition to Name, CRN, and Date of Birth. For example, to add an Age column: `[{ header: 'Age', result => result.age }]`. | []                                        |
 | `pageSize`       | The number of results to return per page.                                                                                                                                                     | 10                                        |
 | `maxPagesToShow` | The maximum number of pages to show on the paginator.                                                                                                                                         | 7                                         |
+| `token`          | An optional function for returning the current user's authorization_code token. This will be used to call the Probation Search API with limited access checks.                                | (req, res) => res.locals.user.token       |
 | `localData`      | A list of search results to return during local development (i.e. when environment = 'local')                                                                                                 | Two dummy records - John Doe and Jane Doe |
 
 ## Support

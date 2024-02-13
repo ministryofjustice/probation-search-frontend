@@ -3,23 +3,15 @@ import OAuthClient from './oauthClient'
 import environments, { EnvironmentConfig } from '../environments'
 
 export default class ProbationSearchClient {
-  constructor(
-    private oauthClient: OAuthClient,
-    private dataSource: 'dev' | 'preprod' | 'prod' | EnvironmentConfig | ProbationSearchResult[],
-  ) {}
+  constructor(private dataSource: 'dev' | 'preprod' | 'prod' | EnvironmentConfig | ProbationSearchResult[]) {}
 
-  async search({
-    query,
-    matchAllTerms = true,
-    providersFilter = [],
-    asUsername,
-    pageNumber = 1,
-    pageSize = 10,
-  }: ProbationSearchRequest): Promise<ProbationSearchResponse> {
+  async search(
+    token: string,
+    { query, matchAllTerms = true, providersFilter = [], pageNumber = 1, pageSize = 10 }: ProbationSearchRequest,
+  ): Promise<ProbationSearchResponse> {
     if (this.dataSource instanceof Array) {
       return Promise.resolve(this.localSearch(this.dataSource, pageNumber, pageSize))
     }
-    const token = await this.oauthClient.getSystemClientToken(asUsername)
     const apiConfig = this.getApiConfig(this.dataSource).searchApi
     const response = await superagent
       .post(`${apiConfig.url}/phrase?page=${pageNumber - 1}&size=${pageSize}}`)
@@ -55,7 +47,6 @@ export interface ProbationSearchRequest {
   query: string
   matchAllTerms: boolean
   providersFilter: string[]
-  asUsername: string
   pageNumber: number
   pageSize: number
 }
