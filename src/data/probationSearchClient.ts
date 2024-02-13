@@ -1,5 +1,4 @@
 import superagent from 'superagent'
-import OAuthClient from './oauthClient'
 import environments, { EnvironmentConfig } from '../environments'
 
 export default class ProbationSearchClient {
