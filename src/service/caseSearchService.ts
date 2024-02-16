@@ -13,9 +13,7 @@ import { highlighter } from '../utils/highlighting'
 
 export interface CaseSearchOptions {
   environment: Environment | EnvironmentConfig
-  /** @deprecated use token function instead */
-  oauthClient?: OAuthClient
-  token?: (req: Request, res: Response) => string
+  oauthClient: OAuthClient
   resultPath?: (crn: string) => string
   extraColumns?: { header: string; value: (result: ProbationSearchResult) => string }[]
   maxQueryLength?: number
@@ -31,8 +29,6 @@ export default class CaseSearchService implements SearchService {
   public constructor(options: CaseSearchOptions) {
     const defaults = {
       resultPath: (crn: string) => `/case/${crn}`,
-      oauthClient: () => 'not used',
-      token: (_req: Request, res: Response) => res.locals.user.token,
       extraColumns: [],
       allowEmptyQuery: false,
       maxQueryLength: 100,
@@ -41,6 +37,7 @@ export default class CaseSearchService implements SearchService {
     }
     this.options = Object.assign(defaults, options)
     this.client = new ProbationSearchClient(
+      this.options.oauthClient,
       this.options.environment === 'local' ? this.options.localData : this.options.environment,
     )
   }
@@ -53,7 +50,7 @@ export default class CaseSearchService implements SearchService {
   }
 
   get: RequestHandler = wrapAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const { resultPath, token, extraColumns, allowEmptyQuery, maxQueryLength, pageSize } = this.options
+    const { resultPath, extraColumns, allowEmptyQuery, maxQueryLength, pageSize } = this.options
 
     // Render an empty search screen if no session
     if (!('probationSearch' in req.session) || !req.session.probationSearch) {
@@ -76,10 +73,11 @@ export default class CaseSearchService implements SearchService {
       query,
       matchAllTerms: (matchAllTerms ?? 'true') === 'true',
       providersFilter: providers ?? [],
+      asUsername: res.locals.user.username,
       pageNumber: req.query.page ? Number.parseInt(req.query.page as string, 10) : 1,
       pageSize,
     }
-    const response = await this.client.search(token(req, res), request)
+    const response = await this.client.search(request)
 
     // Parse and render results
     res.locals.searchResults = {
