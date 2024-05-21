@@ -22,7 +22,7 @@ export default class ProbationSearchClient {
     const token = await this.oauthClient.getSystemClientToken(asUsername)
     const apiConfig = this.getApiConfig(this.dataSource).searchApi
     const response = await superagent
-      .post(`${apiConfig.url}/phrase?page=${pageNumber - 1}&size=${pageSize}}`)
+      .post(`${apiConfig.url}/phrase?page=${pageNumber - 1}&size=${pageSize}`)
       .auth(token, { type: 'bearer' })
       .timeout(apiConfig.timeout)
       .retry(2)
