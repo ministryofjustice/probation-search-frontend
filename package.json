@@ -28,7 +28,7 @@
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "highlight-words-core": "^1.2.2",
-    "superagent": "^9.0.2"
+    "superagent": "^10.1.0"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
