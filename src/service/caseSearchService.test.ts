@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import CaseSearchService from './caseSearchService'
 
-const request = (body: any, query: { [key: string]: string } = {}, session: any = {}) =>
+const request = (body: unknown, query: { [key: string]: string } = {}, session: unknown = {}) =>
   ({
     body,
     query,
@@ -21,7 +21,7 @@ const oauthClient = { getSystemClientToken: jest.fn() }
 let service: CaseSearchService
 
 beforeEach(() => {
-  req = request({})
+  req = request({} as unknown)
   res = {
     render: jest.fn(),
     redirect: jest.fn(),

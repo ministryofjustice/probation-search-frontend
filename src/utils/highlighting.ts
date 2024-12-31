@@ -1,7 +1,7 @@
 import { Chunk, findAll } from 'highlight-words-core'
 
-export function highlighter(query?: string) {
-  return function (textToHighlight?: string, shouldHighlight: boolean = true): string | undefined {
+export default function highlighter(query?: string) {
+  return function highlight(textToHighlight?: string, shouldHighlight: boolean = true): string | undefined {
     if (!shouldHighlight || !textToHighlight || !query) {
       return textToHighlight
     }
@@ -10,9 +10,9 @@ export function highlighter(query?: string) {
       searchWords: query?.split(' ') ?? [],
       autoEscape: true,
     })
-      .map(({ end, highlight, start }: Chunk) => {
+      .map(({ start, end, highlight: hasHighlight }: Chunk) => {
         const text = textToHighlight.substring(start, end)
-        return highlight ? `<span class="govuk-tag--yellow">${text}</span>` : text
+        return hasHighlight ? `<span class="govuk-tag--yellow">${text}</span>` : text
       })
       .join('')
   }
