@@ -1,4 +1,5 @@
 import { NextFunction, Request, RequestHandler, Response } from 'express'
+import { format, parseISO } from 'date-fns'
 import { Environment, EnvironmentConfig } from '../environments'
 import SearchService from './searchService'
 import OAuthClient from '../data/oauthClient'
@@ -8,8 +9,7 @@ import getPaginationLinks from '../utils/pagination'
 import ProbationSearchClient, { ProbationSearchResult } from '../data/probationSearchClient'
 import localData from '../data/localData'
 import wrapAsync from '../utils/middleware'
-import { format, parseISO } from 'date-fns'
-import { highlighter } from '../utils/highlighting'
+import highlighter from '../utils/highlighting'
 
 export interface CaseSearchOptions {
   environment: Environment | EnvironmentConfig
@@ -23,8 +23,9 @@ export interface CaseSearchOptions {
 }
 
 export default class CaseSearchService implements SearchService {
-  private declare readonly options: Required<CaseSearchOptions>
-  private declare readonly client: ProbationSearchClient
+  declare private readonly options: Required<CaseSearchOptions>
+
+  declare private readonly client: ProbationSearchClient
 
   public constructor(options: CaseSearchOptions) {
     const defaults = {
@@ -101,7 +102,7 @@ export default class CaseSearchService implements SearchService {
     }
     res.locals.searchRequest = request
     res.locals.searchResponse = response
-    next()
+    return next()
   })
 
   /**

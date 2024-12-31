@@ -1,4 +1,4 @@
-import { highlighter } from './highlighting'
+import highlighter from './highlighting'
 
 describe('highlightText', () => {
   it.each([
