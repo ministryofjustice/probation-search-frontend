@@ -1,10 +1,10 @@
 import superagent from 'superagent'
-import OAuthClient from './oauthClient'
+import { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients'
 import environments, { EnvironmentConfig } from '../environments'
 
 export default class ProbationSearchClient {
   constructor(
-    private oauthClient: OAuthClient,
+    private readonly hmppsAuthClient: AuthenticationClient,
     private dataSource: 'dev' | 'preprod' | 'prod' | EnvironmentConfig | ProbationSearchResult[],
   ) {}
 
@@ -19,7 +19,7 @@ export default class ProbationSearchClient {
     if (this.dataSource instanceof Array) {
       return Promise.resolve(this.localSearch(this.dataSource, pageNumber, pageSize))
     }
-    const token = await this.oauthClient.getSystemClientToken(asUsername)
+    const token = await this.hmppsAuthClient.getToken(asUsername)
     const apiConfig = this.getApiConfig(this.dataSource).searchApi
     const response = await superagent
       .post(`${apiConfig.url}/phrase?page=${pageNumber - 1}&size=${pageSize}`)

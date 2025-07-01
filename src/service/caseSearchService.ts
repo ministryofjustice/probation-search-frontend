@@ -1,8 +1,8 @@
 import { NextFunction, Request, RequestHandler, Response } from 'express'
 import { format, parseISO } from 'date-fns'
+import { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients'
 import { Environment, EnvironmentConfig } from '../environments'
 import SearchService from './searchService'
-import OAuthClient from '../data/oauthClient'
 import { addParameters, removeParameters } from '../utils/url'
 import getSuggestionLinks from '../utils/suggestions'
 import getPaginationLinks from '../utils/pagination'
@@ -13,7 +13,7 @@ import highlighter from '../utils/highlighting'
 
 export interface CaseSearchOptions {
   environment: Environment | EnvironmentConfig
-  oauthClient: OAuthClient
+  hmppsAuthClient: AuthenticationClient
   resultPath?: (crn: string) => string
   extraColumns?: { header: string; value: (result: ProbationSearchResult) => string }[]
   maxQueryLength?: number
@@ -38,7 +38,7 @@ export default class CaseSearchService implements SearchService {
     }
     this.options = Object.assign(defaults, options)
     this.client = new ProbationSearchClient(
-      this.options.oauthClient,
+      this.options.hmppsAuthClient,
       this.options.environment === 'local' ? this.options.localData : this.options.environment,
     )
   }

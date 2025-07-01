@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
+import { AuthenticationClient } from '@ministryofjustice/hmpps-auth-clients'
 import CaseSearchService from './caseSearchService'
 
 const request = (body: unknown, query: { [key: string]: string } = {}, session: unknown = {}) =>
@@ -17,7 +18,7 @@ let res: Response
 let next: NextFunction
 
 const environment = 'local'
-const oauthClient = { getSystemClientToken: jest.fn() }
+const hmppsAuthClient = { getToken: jest.fn() } as unknown as AuthenticationClient
 let service: CaseSearchService
 
 beforeEach(() => {
@@ -29,7 +30,7 @@ beforeEach(() => {
   } as unknown as Response
   next = () => {}
 
-  service = new CaseSearchService({ environment, oauthClient })
+  service = new CaseSearchService({ environment, hmppsAuthClient })
 })
 
 describe('POST /search', () => {
@@ -69,7 +70,7 @@ describe('GET /search', () => {
   it('renders an error message when query is too long', () => {
     req.session.probationSearch = { query: '12345' }
 
-    new CaseSearchService({ environment, oauthClient, maxQueryLength: 4 }).get(req, res, next)
+    new CaseSearchService({ environment, hmppsAuthClient, maxQueryLength: 4 }).get(req, res, next)
 
     expect(res.locals.searchResults).toEqual({
       errorMessage: { text: 'Query must be 4 characters or less.' },
@@ -78,7 +79,7 @@ describe('GET /search', () => {
   })
 
   test('renders empty search screen for empty query when allowEmptyQuery is true', () => {
-    new CaseSearchService({ environment, oauthClient, allowEmptyQuery: true }).get(req, res, next)
+    new CaseSearchService({ environment, hmppsAuthClient, allowEmptyQuery: true }).get(req, res, next)
 
     expect(res.locals.searchResults).toEqual({})
   })
