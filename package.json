@@ -30,7 +30,7 @@
     "express": "^5.1.0",
     "express-session": "^1.18.0",
     "highlight-words-core": "^1.2.2",
-    "superagent": "^10.1.0"
+    "superagent": "^10.2.2"
   },
   "devDependencies": {
     "@ministryofjustice/eslint-config-hmpps": "^0.0.1-beta.1",
