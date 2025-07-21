@@ -55,5 +55,7 @@ jobs:
       - name: Integration test
         working-directory: client
         run: |
-          npm run start-feature & sleep 5
+          npm run wiremock &
+          npm run start-feature & 
+          sleep 5
           npm run int-test
