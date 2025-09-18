@@ -9,6 +9,7 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     permissions:
+      id-token: write # to publish via OIDC
       contents: read # to checkout repo
     steps:
       - uses: actions/checkout@v5
@@ -18,6 +19,10 @@ jobs:
           cache: npm
           node-version-file: .nvmrc
           registry-url: https://registry.npmjs.org
+
+      # Ensure npm 11.5.1 or later is installed, to support OIDC publishing
+      - name: Update npm
+        run: npm install -g npm@latest
 
       - name: Bump version
         run: jq ".version = \"$version\"" package.json > tmp && mv tmp package.json
@@ -35,5 +40,3 @@ jobs:
 
       - name: Publish
         run: npm publish ./dist --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
