@@ -33,7 +33,7 @@
     "superagent": "^10.1.0"
   },
   "devDependencies": {
-    "@ministryofjustice/eslint-config-hmpps": "^0.0.4",
+    "@ministryofjustice/eslint-config-hmpps": "^0.0.5",
     "@types/express": "^5.0.1",
     "@types/express-session": "^1.18.0",
     "@types/highlight-words-core": "^1.2.3",
