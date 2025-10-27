@@ -60,7 +60,7 @@ export default class CaseSearchService implements SearchService {
 
     // Validate query string from session
     const { query, matchAllTerms, providers } = req.session.probationSearch
-    if (!query) {
+    if (!query || query.trim().length === 0) {
       return allowEmptyQuery
         ? this.noSearch(res, next)
         : this.errorMessage(req, res, next, 'Please enter a search term')
@@ -74,7 +74,7 @@ export default class CaseSearchService implements SearchService {
       query,
       matchAllTerms: (matchAllTerms ?? 'true') === 'true',
       providersFilter: providers ?? [],
-      asUsername: res.locals.user.username,
+      asUsername: res.locals.user?.username,
       pageNumber: req.query.page ? Number.parseInt(req.query.page as string, 10) : 1,
       pageSize,
     }

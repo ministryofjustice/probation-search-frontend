@@ -67,6 +67,14 @@ describe('GET /search', () => {
     expect(res.locals.searchResults).toEqual({ errorMessage: { text: 'Please enter a search term' }, query: '' })
   })
 
+  test('renders an error message if query is spaces', () => {
+    req.session.probationSearch = { query: '   ' }
+
+    service.get(req, res, next)
+
+    expect(res.locals.searchResults).toEqual({ errorMessage: { text: 'Please enter a search term' }, query: '' })
+  })
+
   it('renders an error message when query is too long', () => {
     req.session.probationSearch = { query: '12345' }
 
