@@ -2,7 +2,7 @@ import { Chunk, findAll } from 'highlight-words-core'
 
 export default function highlighter(query?: string) {
   return function highlight(textToHighlight?: string, shouldHighlight: boolean = true): string | undefined {
-    if (!shouldHighlight || !textToHighlight || !query) {
+    if (!shouldHighlight || !textToHighlight || !query || query.trim().length === 0) {
       return textToHighlight
     }
     return findAll({
