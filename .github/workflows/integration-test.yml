@@ -15,7 +15,7 @@ jobs:
 
       - uses: actions/setup-node@v6
         with:
-          cache-dependency-path: component/package-lock.json
+          #cache-dependency-path: component/package-lock.json
           cache: npm
           node-version: 24
 
