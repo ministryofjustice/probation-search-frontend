@@ -25,7 +25,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@ministryofjustice/hmpps-auth-clients": "^0.0.3",
+    "@ministryofjustice/hmpps-auth-clients": "^1.0.0",
     "date-fns": "^4.1.0",
     "express": "^5.1.0",
     "express-session": "^1.18.0",
