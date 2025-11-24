@@ -9,7 +9,7 @@ jobs:
       contents: read # to checkout repo
     steps:
       - name: Checkout component
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           path: component
 
@@ -27,7 +27,7 @@ jobs:
           npm pack ./dist
 
       - name: Checkout client
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           repository: ministryofjustice/probation-search-ui
           path: client
