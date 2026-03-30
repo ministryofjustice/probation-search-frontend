@@ -44,6 +44,10 @@ jobs:
           npm clean-install
           npm install ../component/ministryofjustice-probation-search-frontend-0.0.0.tgz --save
 
+      - name: Install cypress binary
+        working-directory: client
+        run: npx cypress install
+
       - name: Build
         working-directory: client
         run: npm run build
