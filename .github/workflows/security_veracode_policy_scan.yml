@@ -26,7 +26,7 @@ jobs:
       - name: Package
         run: cd dist && zip -r ../source.zip .
 
-      - uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: build-results
           path: source.zip
@@ -34,7 +34,7 @@ jobs:
   security-veracode-policy-check:
     name: Security Veracode policy scan
     needs: [build]
-    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_veracode_policy_scan.yml@d79e83be2cc392b981dd92c8f6f85007d18032e9 # v2.10.1
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_veracode_policy_scan.yml@b74c1336dede62686c46e93458e2ef197ca579ca # v2.13.0
     with:
       channel_id: ${{ vars.SECURITY_ALERTS_SLACK_CHANNEL_ID || 'NO_SLACK' }}
       veracode_package_artifact_name: build-results
