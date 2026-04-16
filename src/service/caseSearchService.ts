@@ -15,7 +15,10 @@ export interface CaseSearchOptions {
   environment: Environment | EnvironmentConfig
   hmppsAuthClient: AuthenticationClient
   resultPath?: (crn: string) => string
-  extraColumns?: { header: string; value: (result: ProbationSearchResult) => string }[]
+  extraColumns?: {
+    header: string
+    value: (result: ProbationSearchResult) => string | { html?: string; text?: string }
+  }[]
   maxQueryLength?: number
   allowEmptyQuery?: boolean
   pageSize?: number
