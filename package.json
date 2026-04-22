@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "@ministryofjustice/eslint-config-hmpps": "^1.0.0",
-    "@ministryofjustice/hmpps-npm-script-allowlist": "0.0.3",
+    "@ministryofjustice/hmpps-npm-script-allowlist": "0.0.4",
     "@types/express": "^5.0.1",
     "@types/express-session": "^1.18.0",
     "@types/highlight-words-core": "^1.2.3",
