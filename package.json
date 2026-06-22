@@ -26,15 +26,18 @@
     "setup": "npm ci && hmpps-npm-script-run-allowlist"
   },
   "dependencies": {
-    "@ministryofjustice/hmpps-auth-clients": "^1.0.0",
     "date-fns": "^4.1.0",
     "express": "^5.1.0",
     "express-session": "^1.18.0",
     "highlight-words-core": "^1.2.2",
     "superagent": "^10.1.0"
   },
+  "peerDependencies": {
+    "@ministryofjustice/hmpps-auth-clients": ">=1.0.0"
+  },
   "devDependencies": {
     "@ministryofjustice/eslint-config-hmpps": "^1.0.0",
+    "@ministryofjustice/hmpps-auth-clients": "^3.0.0",
     "@ministryofjustice/hmpps-npm-script-allowlist": "0.0.6",
     "@types/express": "^5.0.1",
     "@types/express-session": "^1.18.0",
@@ -47,7 +50,12 @@
     "prettier": "^3.2.5",
     "prettier-plugin-jinja-template": "^2.0.0",
     "ts-jest": "^29.1.2",
-    "typescript": "^5.4.5"
+    "typescript": "^6.0.3"
+  },
+  "overrides": {
+    "@istanbuljs/load-nyc-config": {
+      "js-yaml": "4.2.0"
+    }
   },
   "overrides": {
     "@istanbuljs/load-nyc-config": {

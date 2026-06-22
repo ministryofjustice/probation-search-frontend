@@ -15,5 +15,7 @@
     "outDir": "dist",
     "declaration": true,
     "sourceMap": true,
+    /* Type definitions */
+    "types": ["jest", "express", "express-session"]
   }
 }
