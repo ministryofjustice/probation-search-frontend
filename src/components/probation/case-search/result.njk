@@ -1,7 +1,7 @@
 <tr class="govuk-table__row">
     <th scope="row" class="govuk-table__header">
         <a class="govuk-link"
-           href="{{ fn.resultPath(result.otherIds.crn) }}"
+           href="{% if params.resultPath %}{{ params.resultPath | replace(':crn', result.otherIds.crn) }}{% else %}{{ fn.resultPath(result.otherIds.crn) }}{% endif %}"
            title="Select case record for {{ result.surname }}, {{ result.firstName }}">
             {{ fn.highlight(result.surname, 'surname' in result.highlight) | safe }},
             {{ fn.highlight(result.firstName, 'firstName' in result.highlight) | safe }}
