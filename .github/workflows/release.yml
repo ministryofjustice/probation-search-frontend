@@ -22,7 +22,7 @@ jobs:
 
       # Ensure npm 11.5.1 or later is installed, to support OIDC publishing
       - name: Update npm
-        run: npm install -g npm@latest
+        run: npm install -g npm@11
 
       - name: Bump version
         run: jq ".version = \"$version\"" package.json > tmp && mv tmp package.json
