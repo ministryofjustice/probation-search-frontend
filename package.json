@@ -53,9 +53,7 @@
     "typescript": "^6.0.3"
   },
   "overrides": {
-    "@istanbuljs/load-nyc-config": {
-      "js-yaml": "4.2.0"
-    }
+    "js-yaml": "^4.2.0"
   },
   "jest": {
     "transform": {
