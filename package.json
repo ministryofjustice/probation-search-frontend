@@ -29,7 +29,7 @@
     "date-fns": "^4.1.0",
     "express": "^5.1.0",
     "express-session": "^1.18.0",
-    "highlight-words-core": "^1.2.2",
+    "highlight-words-core": "^2.0.0",
     "superagent": "^10.1.0"
   },
   "peerDependencies": {
