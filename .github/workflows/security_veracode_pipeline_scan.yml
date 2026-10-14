@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           cache: npm
           node-version: lts/*
@@ -26,7 +26,7 @@ jobs:
       - name: Package
         run: cd dist && zip -r ../source.zip .
 
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: build-results
           path: source.zip
@@ -34,7 +34,7 @@ jobs:
   security-veracode-pipeline-scan:
     name: Security Veracode pipeline scan
     needs: [build]
-    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_veracode_pipeline_scan.yml@3aa5e961949ee57f5c5e538c9a3e345402120ef3 # v2.22.7
+    uses: ministryofjustice/hmpps-github-actions/.github/workflows/security_veracode_pipeline_scan.yml@b9440f7fef20233eabd05950d9f9355e24e4ea70 # v2.22.11
     with:
       channel_id: ${{ vars.SECURITY_ALERTS_SLACK_CHANNEL_ID || 'NO_SLACK' }}
       veracode_package_artifact_name: build-results
