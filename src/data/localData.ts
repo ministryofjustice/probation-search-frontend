@@ -3,7 +3,7 @@ import { ProbationSearchResult } from './probationSearchClient'
 const localData: ProbationSearchResult[] = [
   {
     offenderId: 1,
-    otherIds: { crn: 'A000001' },
+    otherIds: { crn: 'A000001', nomsNumber: 'A1' },
     firstName: 'John',
     surname: 'Doe',
     dateOfBirth: '1980-01-01',
